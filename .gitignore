@@ -7,6 +7,12 @@ build/
 dist/
 .env
 
+# Project roadmap / planning docs live in the private portfolio workspace only —
+# never publish them to this repo.
+roadmap/
+Roadmap/
+*[Rr]oadmap*.md
+
 # BIRD dataset — downloaded, not vendored (see README)
 data/
 !data/.gitkeep
