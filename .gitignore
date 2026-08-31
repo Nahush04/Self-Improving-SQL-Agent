@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.env
+
+# BIRD dataset — downloaded, not vendored (see README)
+data/
+!data/.gitkeep
+
+# experiment outputs
+results/*
+!results/.gitkeep
+
+# local memory store
+*.sqlite-memory
+memory_store.db

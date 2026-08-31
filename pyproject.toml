@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "self-improving-sql-agent"
+version = "0.1.0"
+description = "A text-to-SQL agent that improves over time by reading from an external memory served over MCP"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=0.40",
+    "mcp[cli]>=1.2",
+    "sqlite-vec>=0.1",
+    "sentence-transformers>=3",
+    "python-dotenv>=1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+sqlagent-baseline = "sqlagent.run_baseline:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
