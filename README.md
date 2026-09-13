@@ -12,8 +12,8 @@ memory **cold** vs. memory **warm**, plus ablations, reported honestly.
 
 | Milestone | What | State |
 |---|---|---|
-| M0 | Data, grader, memory-free baseline agent, cold-run harness | code done; cold run pending an API key |
-| M1 | Memory MCP server | not started |
+| M0 | Data, grader, memory-free baseline agent, cold-run harness | done — cold baseline run, A0 = 37.3% |
+| M1 | Memory MCP server | done |
 | M2 | Agent talks to the memory server | not started |
 | M3 | Reflection + memory-update logic | not started |
 | M4 | Full cold-vs-warm experiment + ablations | not started |
@@ -92,3 +92,54 @@ accuracy / cost / latency summary. The runner stops before it passes the spend c
 
 The agent runs on a cheap model with prompt caching on the schema block; a full cold run
 over the test set is a few cents. The stronger model is only used later, for reflection.
+
+## The memory MCP server (M1)
+
+A standalone server, separate from the agent, that stores lessons, example question/SQL
+pairs, and full attempt episodes, and serves similarity search over them. It speaks the
+[Model Context Protocol](https://modelcontextprotocol.io), so the agent (added in M2) is
+just one possible client — any MCP client can use it.
+
+- **Storage**: one SQLite file (`data/memory.sqlite` by default) with a
+  [sqlite-vec](https://github.com/asg017/sqlite-vec) virtual table for the embedding index.
+- **Embeddings**: local, free, CPU-only (`sentence-transformers/all-MiniLM-L6-v2`) — no
+  second paid vendor.
+- **Tools**: `search_memory`, `add_memory`, `update_memory`, `get_memory`, `list_memories`,
+  `delete_memory`, `record_episode`, `get_stats`.
+
+Run it locally over stdio:
+
+```
+python -m sqlagent.memory.server
+```
+
+Or over streamable HTTP, guarded by a static API key, for a remote demo:
+
+```
+SQLAGENT_MCP_API_KEY=your-demo-key python -m sqlagent.memory.server --transport http --port 8000
+```
+
+### Using it from Claude Desktop
+
+Add this to Claude Desktop's `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "sql-agent-memory": {
+      "command": "C:/Test Folder/self-improving-sql-agent/.venv/Scripts/python.exe",
+      "args": ["-m", "sqlagent.memory.server"]
+    }
+  }
+}
+```
+
+Restart Claude Desktop and the memory tools become available in chat — for example, asking
+it to `add_memory` a fact and then `search_memory` for it back.
+
+### Testing
+
+```
+pytest tests/test_memory_store.py         # unit tests, one per tool, fast fake embedder
+pytest tests/test_memory_integration.py   # drives the real server over stdio, real MCP client
+```

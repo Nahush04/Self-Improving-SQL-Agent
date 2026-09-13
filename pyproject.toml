@@ -16,13 +16,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "pytest-asyncio>=0.24"]
 
 [project.scripts]
 sqlagent-baseline = "sqlagent.run_baseline:main"
+sqlagent-memory = "sqlagent.memory.server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"

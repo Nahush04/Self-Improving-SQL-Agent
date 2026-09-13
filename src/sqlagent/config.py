@@ -19,6 +19,9 @@ BIRD_DB_DIR = BIRD_ROOT / "dev_databases"
 
 RESULTS_DIR = REPO_ROOT / "results"
 
+# Memory MCP server storage: one SQLite file, sqlite-vec for the embedding index.
+MEMORY_DB_PATH = Path(os.getenv("SQLAGENT_MEMORY_DB", str(REPO_ROOT / "data" / "memory.sqlite")))
+
 # The two databases this project works on. financial is banking/transaction shaped;
 # formula_1 is a larger relational schema with more hard questions. Together they give
 # a schema-variety story without spreading across all eleven dev databases.
