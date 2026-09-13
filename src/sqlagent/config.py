@@ -22,6 +22,14 @@ RESULTS_DIR = REPO_ROOT / "results"
 # Memory MCP server storage: one SQLite file, sqlite-vec for the embedding index.
 MEMORY_DB_PATH = Path(os.getenv("SQLAGENT_MEMORY_DB", str(REPO_ROOT / "data" / "memory.sqlite")))
 
+# Distance (L2, on normalized embeddings) below which a new lesson is treated as a
+# near-duplicate of an existing one and dropped instead of stored again.
+LESSON_DUP_DISTANCE = 0.5
+# Distance below which a new lesson is close enough to an existing one to be merged
+# into it (appended) rather than stored as a separate memory. Above this, it's added
+# as a new, distinct lesson.
+LESSON_MERGE_DISTANCE = 0.8
+
 # The two databases this project works on. financial is banking/transaction shaped;
 # formula_1 is a larger relational schema with more hard questions. Together they give
 # a schema-variety story without spreading across all eleven dev databases.

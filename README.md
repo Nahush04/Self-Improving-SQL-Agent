@@ -15,7 +15,7 @@ memory **cold** vs. memory **warm**, plus ablations, reported honestly.
 | M0 | Data, grader, memory-free baseline agent, cold-run harness | done — cold baseline run, A0 = 37.3% |
 | M1 | Memory MCP server | done |
 | M2 | Agent talks to the memory server | done |
-| M3 | Reflection + memory-update logic | not started |
+| M3 | Reflection + memory-update logic | done |
 | M4 | Full cold-vs-warm experiment + ablations | not started |
 | M5 | Package: Docker, Claude Desktop demo, CI | not started |
 
@@ -157,3 +157,20 @@ python -m sqlagent.run_with_memory --limit 5
 Against an empty memory store this behaves like the baseline agent, just with an extra
 round trip per question — proving the wiring, not yet the learning. Learning (writing new
 lessons back after each attempt) is the reflection step, added in M3.
+
+## Reflection and memory updates (M3)
+
+After each training-stream attempt, a stronger model looks at the question, every attempt,
+and the outcome, and writes zero or more short, generalizable lessons. It sees the gold SQL
+only here, during training — never at test time, so the held-out numbers stay clean.
+
+Each new lesson is then compared against the closest existing lesson (by embedding
+distance) and either dropped as a near-duplicate, merged into the existing one, or added
+as new — a fixed distance-threshold rule rather than another model call, kept simple on
+purpose. Correctly-answered questions are also stored as retrievable examples.
+
+```
+python -m sqlagent.run_train --limit 20
+```
+
+This is what makes the memory store "warm" for the M4 cold-vs-warm comparison.

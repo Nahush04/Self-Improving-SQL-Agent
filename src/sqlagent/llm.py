@@ -70,7 +70,6 @@ class LLM:
         system_blocks: list[dict],
         user_text: str,
         max_tokens: int,
-        temperature: float = 0.0,
     ) -> str:
         if self.total.cost_usd >= settings.cost_cap_usd:
             raise CostCapExceeded(
@@ -83,7 +82,6 @@ class LLM:
             max_tokens=max_tokens,
             system=system_blocks,
             messages=[{"role": "user", "content": user_text}],
-            extra_body={"temperature": temperature},
         )
         elapsed = time.monotonic() - started
         call_usage, _ = _price(self.model, resp.usage)

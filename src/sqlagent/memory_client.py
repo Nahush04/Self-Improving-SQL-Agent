@@ -75,6 +75,14 @@ class MemoryClient:
         )
         return _result_value(result)
 
+    async def update_memory(
+        self, memory_id: int, text: str | None = None, metadata: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        result = await self._session.call_tool(
+            "update_memory", {"memory_id": memory_id, "text": text, "metadata": metadata}
+        )
+        return _result_value(result)
+
     async def record_episode(
         self,
         question: str,
