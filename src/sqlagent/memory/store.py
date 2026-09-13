@@ -246,6 +246,21 @@ class MemoryStore:
             self._conn.commit()
             return cur.lastrowid
 
+    def list_episodes(self, db_id: str | None = None, limit: int = 1000) -> list[dict[str, Any]]:
+        """Raw attempt log, newest first. Not exposed as an MCP tool — used only by the
+        experiment harness for the 'episodes only' retrieval ablation."""
+        clauses, params = [], []
+        if db_id is not None:
+            clauses.append("db_id = ?")
+            params.append(db_id)
+        where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+        params.append(limit)
+        with self._lock:
+            rows = self._conn.execute(
+                f"SELECT * FROM episodes {where} ORDER BY id DESC LIMIT ?", params
+            ).fetchall()
+        return [_row_to_episode(r) for r in rows]
+
     # -- stats ----------------------------------------------------------
 
     def get_stats(self) -> dict[str, Any]:
@@ -278,6 +293,21 @@ class MemoryStore:
             if total_episodes
             else None,
         }
+
+
+def _row_to_episode(row: sqlite3.Row) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "question_id": row["question_id"],
+        "db_id": row["db_id"],
+        "question": row["question"],
+        "gold_sql": row["gold_sql"],
+        "final_sql": row["final_sql"],
+        "attempts": json.loads(row["attempts"]),
+        "correct": bool(row["correct"]),
+        "reason": row["reason"],
+        "created_at": row["created_at"],
+    }
 
 
 def _row_to_memory(row: sqlite3.Row) -> dict[str, Any]:

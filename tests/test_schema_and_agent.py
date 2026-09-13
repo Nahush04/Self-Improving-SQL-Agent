@@ -40,6 +40,22 @@ def test_memory_block_renders_lessons_and_examples():
     assert "SQL: SELECT COUNT(*) FROM t" in block
 
 
+def test_memory_block_renders_episodes():
+    memories = [
+        {
+            "kind": "episode",
+            "question": "how many clients are there?",
+            "final_sql": "SELECT COUNT(*) FROM client",
+            "correct": False,
+        }
+    ]
+    block = _memory_block(memories)
+    assert "Past attempts on similar questions" in block
+    assert "Q: how many clients are there?" in block
+    assert "Tried SQL: SELECT COUNT(*) FROM client" in block
+    assert "Outcome: incorrect" in block
+
+
 def test_user_prompt_includes_memory_block():
     memories = [{"kind": "lesson", "text": "a lesson", "metadata": {}}]
     prompt = _user_prompt("a question", "", memories)

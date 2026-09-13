@@ -72,3 +72,27 @@ def train_set() -> tuple[Question, ...]:
 
 def test_set() -> tuple[Question, ...]:
     return _split()[1]
+
+
+def train_sample(n: int, seed: int = SPLIT_SEED + 1) -> tuple[Question, ...]:
+    """A deterministic, database-stratified subsample of the training pool.
+
+    Used to cap the training stream size for the M4 experiment (~150 questions keeps
+    cost in the low tens of dollars while still showing a cold-vs-warm gap).
+    """
+    pool = list(train_set())
+    if n >= len(pool):
+        return tuple(pool)
+
+    rng = random.Random(seed)
+    by_db: dict[str, list[Question]] = {}
+    for q in pool:
+        by_db.setdefault(q.db_id, []).append(q)
+
+    sample: list[Question] = []
+    for db_id, items in by_db.items():
+        rng.shuffle(items)
+        k = round(n * len(items) / len(pool))
+        sample.extend(items[:k])
+    sample.sort(key=lambda q: (q.db_id, q.question_id))
+    return tuple(sample)

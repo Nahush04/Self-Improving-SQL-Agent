@@ -16,7 +16,7 @@ memory **cold** vs. memory **warm**, plus ablations, reported honestly.
 | M1 | Memory MCP server | done |
 | M2 | Agent talks to the memory server | done |
 | M3 | Reflection + memory-update logic | done |
-| M4 | Full cold-vs-warm experiment + ablations | not started |
+| M4 | Full cold-vs-warm experiment + ablations | done |
 | M5 | Package: Docker, Claude Desktop demo, CI | not started |
 
 ## Task and data
@@ -174,3 +174,21 @@ python -m sqlagent.run_train --limit 20
 ```
 
 This is what makes the memory store "warm" for the M4 cold-vs-warm comparison.
+
+## The full experiment (M4)
+
+One script runs everything against a single fresh memory store: the cold baseline, the
+training pass (with reflection, building up memory), the warm re-test, and every ablation
+— lessons only, examples only, memory warm but retrieval switched off, and episodes only
+(raw uncurated attempt logs instead of curated lessons/examples). One running dollar total
+is tracked across every phase against the spend cap.
+
+```
+python -m sqlagent.run_experiment
+```
+
+Training uses a stratified subsample of the training pool (`TRAIN_SAMPLE_SIZE`, 150 by
+default) rather than all of it, to keep the whole experiment's cost in the low tens of
+dollars.
+
+See `BENCHMARKS.md` for the actual numbers, from real runs only.

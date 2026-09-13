@@ -39,6 +39,12 @@ DATABASES = ("financial", "formula_1")
 SPLIT_SEED = 20260830
 TEST_PER_DB = 30
 
+# M4 training-stream size: a stratified subsample of the ~221-question training pool,
+# not the whole thing — keeps the full experiment's cost in the low tens of dollars
+# while still large enough to show a cold-vs-warm gap. Settles the roadmap's open
+# question on stream size.
+TRAIN_SAMPLE_SIZE = 150
+
 # Per-1M-token prices in USD. Keep in sync with the Anthropic pricing page.
 PRICING = {
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00, "cache_write": 1.25, "cache_read": 0.10},

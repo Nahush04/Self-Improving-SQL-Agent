@@ -23,3 +23,17 @@ def test_questions_have_gold_and_difficulty():
     for q in list(ds.train_set())[:20]:
         assert q.gold_sql.lower().startswith("select")
         assert q.difficulty in {"simple", "moderate", "challenging"}
+
+
+def test_train_sample_is_stratified_subset_and_deterministic():
+    sample = ds.train_sample(150)
+    assert len(sample) <= 150
+    train_ids = {q.question_id for q in ds.train_set()}
+    assert {q.question_id for q in sample} <= train_ids
+    assert set(q.db_id for q in sample) == set(DATABASES)
+    assert ds.train_sample(150) == sample
+
+
+def test_train_sample_returns_whole_pool_if_n_too_large():
+    full = ds.train_set()
+    assert ds.train_sample(len(full) + 100) == full

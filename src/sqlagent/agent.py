@@ -50,6 +50,7 @@ def _memory_block(memories: list[dict] | None) -> str:
         return ""
     lessons = [m["text"] for m in memories if m["kind"] == "lesson"]
     examples = [m for m in memories if m["kind"] == "example"]
+    episodes = [m for m in memories if m["kind"] == "episode"]
 
     parts = []
     if lessons:
@@ -61,6 +62,15 @@ def _memory_block(memories: list[dict] | None) -> str:
             for ex in examples
         )
         parts.append(f"Similar questions solved before:\n{rendered}")
+    if episodes:
+        # Raw, uncurated attempt log — used only by the "episodes only" retrieval
+        # ablation, contrasted against the curated lessons/examples above.
+        rendered = "\n\n".join(
+            f"Q: {ep['question']}\nTried SQL: {ep['final_sql']}\n"
+            f"Outcome: {'correct' if ep['correct'] else 'incorrect'}"
+            for ep in episodes
+        )
+        parts.append(f"Past attempts on similar questions:\n{rendered}")
     return "\n\n".join(parts)
 
 
