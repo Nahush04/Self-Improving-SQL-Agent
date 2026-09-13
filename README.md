@@ -14,7 +14,7 @@ memory **cold** vs. memory **warm**, plus ablations, reported honestly.
 |---|---|---|
 | M0 | Data, grader, memory-free baseline agent, cold-run harness | done — cold baseline run, A0 = 37.3% |
 | M1 | Memory MCP server | done |
-| M2 | Agent talks to the memory server | not started |
+| M2 | Agent talks to the memory server | done |
 | M3 | Reflection + memory-update logic | not started |
 | M4 | Full cold-vs-warm experiment + ablations | not started |
 | M5 | Package: Docker, Claude Desktop demo, CI | not started |
@@ -143,3 +143,17 @@ it to `add_memory` a fact and then `search_memory` for it back.
 pytest tests/test_memory_store.py         # unit tests, one per tool, fast fake embedder
 pytest tests/test_memory_integration.py   # drives the real server over stdio, real MCP client
 ```
+
+## The agent as an MCP client (M2)
+
+The agent talks to the memory server the same way any other MCP client would — it never
+imports the storage code directly. Before writing SQL, it asks the server for lessons and
+example queries relevant to the question and folds whatever comes back into its prompt.
+
+```
+python -m sqlagent.run_with_memory --limit 5
+```
+
+Against an empty memory store this behaves like the baseline agent, just with an extra
+round trip per question — proving the wiring, not yet the learning. Learning (writing new
+lessons back after each attempt) is the reflection step, added in M3.

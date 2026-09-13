@@ -44,14 +44,44 @@ class AgentResult:
     attempts: list[Attempt] = field(default_factory=list)
 
 
-def _user_prompt(question: str, evidence: str) -> str:
+def _memory_block(memories: list[dict] | None) -> str:
+    """Render retrieved lessons and example queries for the prompt. Empty if none."""
+    if not memories:
+        return ""
+    lessons = [m["text"] for m in memories if m["kind"] == "lesson"]
+    examples = [m for m in memories if m["kind"] == "example"]
+
+    parts = []
+    if lessons:
+        bullet_list = "\n".join(f"- {text}" for text in lessons)
+        parts.append(f"Lessons from past attempts on this database:\n{bullet_list}")
+    if examples:
+        rendered = "\n\n".join(
+            f"Q: {ex['metadata'].get('question', '')}\nSQL: {ex['metadata'].get('sql', ex['text'])}"
+            for ex in examples
+        )
+        parts.append(f"Similar questions solved before:\n{rendered}")
+    return "\n\n".join(parts)
+
+
+def _user_prompt(question: str, evidence: str, memories: list[dict] | None = None) -> str:
     parts = [f"Question: {question}"]
     if evidence:
         parts.append(f"Hint: {evidence}")
-    return "\n".join(parts)
+    memory_text = _memory_block(memories)
+    if memory_text:
+        parts.append(memory_text)
+    return "\n\n".join(parts)
 
 
-def answer(llm: LLM, db_id: str, question: str, evidence: str, max_attempts: int = 2) -> AgentResult:
+def answer(
+    llm: LLM,
+    db_id: str,
+    question: str,
+    evidence: str,
+    max_attempts: int = 2,
+    memories: list[dict] | None = None,
+) -> AgentResult:
     # The schema block is marked for prompt caching. Running a whole database's
     # questions back to back means every question after the first reads it from cache.
     schema_block = {
@@ -62,7 +92,7 @@ def answer(llm: LLM, db_id: str, question: str, evidence: str, max_attempts: int
     system_blocks = [{"type": "text", "text": _SYSTEM}, schema_block]
 
     result = AgentResult(final_sql="")
-    prompt = _user_prompt(question, evidence)
+    prompt = _user_prompt(question, evidence, memories)
 
     for i in range(max_attempts):
         raw = llm.complete(system_blocks, prompt, max_tokens=settings.agent_max_tokens)
@@ -78,7 +108,7 @@ def answer(llm: LLM, db_id: str, question: str, evidence: str, max_attempts: int
             if i + 1 == max_attempts:
                 return result
             prompt = (
-                f"{_user_prompt(question, evidence)}\n\n"
+                f"{_user_prompt(question, evidence, memories)}\n\n"
                 f"Your previous query failed:\n{sql}\n\n"
                 f"SQLite error: {exc}\n\n"
                 f"Return a corrected query."

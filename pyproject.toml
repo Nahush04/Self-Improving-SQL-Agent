@@ -21,6 +21,7 @@ dev = ["pytest>=8", "pytest-asyncio>=0.24"]
 [project.scripts]
 sqlagent-baseline = "sqlagent.run_baseline:main"
 sqlagent-memory = "sqlagent.memory.server:main"
+sqlagent-with-memory = "sqlagent.run_with_memory:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
