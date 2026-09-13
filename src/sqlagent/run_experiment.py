@@ -101,6 +101,7 @@ async def _train_pass(
     lesson_actions: Counter[str] = Counter()
     correct_count = 0
     stopped_early = None
+    growth: list[dict] = []
 
     for i, q in enumerate(questions, 1):
         try:
@@ -151,6 +152,8 @@ async def _train_pass(
             reason=g.reason,
         )
         if i % 25 == 0 or i == len(questions):
+            stats = await client.get_stats()
+            growth.append({"questions_seen": i, "total_memories": stats["total_memories"]})
             print(f"[train] {i}/{len(questions)}  lessons so far: {dict(lesson_actions)}")
         if stopped_early:
             break
@@ -160,6 +163,7 @@ async def _train_pass(
         "questions": len(questions),
         "accuracy": round(correct_count / len(questions), 4) if questions else 0.0,
         "lesson_actions": dict(lesson_actions),
+        "memory_growth": growth,
         "stopped_early": stopped_early,
     }
 

@@ -17,7 +17,7 @@ memory **cold** vs. memory **warm**, plus ablations, reported honestly.
 | M2 | Agent talks to the memory server | done |
 | M3 | Reflection + memory-update logic | done |
 | M4 | Full cold-vs-warm experiment + ablations | done |
-| M5 | Package: Docker, Claude Desktop demo, CI | not started |
+| M5 | Package: Docker, Claude Desktop demo, CI | done |
 
 ## Task and data
 
@@ -192,3 +192,23 @@ default) rather than all of it, to keep the whole experiment's cost in the low t
 dollars.
 
 See `BENCHMARKS.md` for the actual numbers, from real runs only.
+
+```
+python -m sqlagent.report                 # summarize the most recent experiment run
+python -m sqlagent.report results/experiment_20260913T050344Z.json
+```
+
+## Packaging (M5)
+
+- **Docker**: `docker build -t sqlagent-memory .` builds the memory server as a standalone
+  image. Run it with mounted volumes for the SQLite file and the embedding model cache
+  (the model downloads once, on first use, and is cached from then on):
+  ```
+  docker run -p 8000:8000 \
+    -v sqlagent-memory-data:/data \
+    -v sqlagent-memory-hf-cache:/root/.cache/huggingface \
+    -e SQLAGENT_MCP_API_KEY=your-demo-key sqlagent-memory
+  ```
+- **CI**: GitHub Actions (`.github/workflows/tests.yml`) runs the full pytest suite on
+  every push and pull request against `main`. No API key is needed — every test uses a
+  fake LLM or the local embedding model.
