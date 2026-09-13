@@ -81,9 +81,9 @@ class LLM:
         resp = self._client.messages.create(
             model=self.model,
             max_tokens=max_tokens,
-            temperature=temperature,
             system=system_blocks,
             messages=[{"role": "user", "content": user_text}],
+            extra_body={"temperature": temperature},
         )
         elapsed = time.monotonic() - started
         call_usage, _ = _price(self.model, resp.usage)
